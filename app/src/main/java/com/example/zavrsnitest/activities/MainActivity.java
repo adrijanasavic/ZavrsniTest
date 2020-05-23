@@ -38,6 +38,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.example.zavrsnitest.net.MyServiceContract.APIKEY;
+import static com.example.zavrsnitest.tools.Tools.KEY;
+
 
 public class MainActivity extends AppCompatActivity implements SearchAdapter.OnItemClickListener {
 
@@ -220,5 +222,10 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.OnI
     @Override
     public void onItemClick(int position) {
 
+        Search movie = adapter.get( position );
+
+        Intent i = new Intent( this, DetailsActivity.class );
+        i.putExtra( KEY, movie.getImdbID() );
+        startActivity( i );
     }
 }
