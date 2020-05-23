@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">ZavrsniTest</string>
+    <string name="app_name">GF</string>
+
+    <string name="adrijana_savic">Adrijana Savic</string>
+
+    <string name="splashtime_key">splashtime_settings</string>
+    <string name="splash_key">splash_settings</string>
+
 </resources>
