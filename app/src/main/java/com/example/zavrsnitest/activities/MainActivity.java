@@ -1,8 +1,10 @@
-package com.example.zavrsnitest;
+package com.example.zavrsnitest.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+
+import com.example.zavrsnitest.R;
 
 public class MainActivity extends AppCompatActivity {
 

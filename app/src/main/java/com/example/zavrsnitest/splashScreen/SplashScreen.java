@@ -15,7 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 
-import com.example.zavrsnitest.MainActivity;
+import com.example.zavrsnitest.activities.MainActivity;
 import com.example.zavrsnitest.R;
 
 import java.io.IOException;
