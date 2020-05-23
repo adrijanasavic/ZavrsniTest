@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         setupDrawer();
     }
 
+
     private void fillDataDrawer() {
         drawerItems = new ArrayList<>();
         drawerItems.add( "Lista filmova" );
