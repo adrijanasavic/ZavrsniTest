@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.example.zavrsnitest.R;
 import com.example.zavrsnitest.adapters.SearchAdapter;
+import com.example.zavrsnitest.dialog.AboutDialog;
 import com.example.zavrsnitest.net.MyService;
 import com.example.zavrsnitest.net.model1.Search;
 import com.example.zavrsnitest.net.model1.SearchResult;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.OnI
 
     private ImageButton btnSearch;
     private EditText movieName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
@@ -165,6 +167,12 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.OnI
                         title = "Brisanje filmova";
                         //TODO : brisanje cele liste filmova
                         break;
+                    case 4:
+                        AboutDialog dialog = new AboutDialog( MainActivity.this );
+                        dialog.show();
+                        title = "O aplikaciji";
+                        break;
+
                     default:
                         break;
                 }
