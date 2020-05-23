@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.OnI
         setupToolbar();
         fillDataDrawer();
         setupDrawer();
+
+        fillData();
     }
 
     private void getMovieByName(String name) {

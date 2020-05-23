@@ -225,7 +225,7 @@
             android:textStyle="bold" />
 
 
-        <RatingBar
+        <EditText
             android:id="@+id/details_ocena"
             style="@style/Widget.AppCompat.EditText"
             android:layout_width="wrap_content"

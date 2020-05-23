@@ -34,7 +34,7 @@ public class Filmovi {
     private String mVreme;
 
     @DatabaseField(columnName = "mCena")
-    private String mCena;
+    private String mCena; // TODO : OCENA
 
     @DatabaseField(columnName = "imdbId")
     private String mImdbId;
