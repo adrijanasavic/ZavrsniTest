@@ -4,13 +4,18 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,6 +33,7 @@ import com.example.zavrsnitest.db.DatabaseHelper;
 import com.example.zavrsnitest.db.model.Filmovi;
 import com.example.zavrsnitest.dialog.AboutDialog;
 import com.example.zavrsnitest.settings.SettingsActivity;
+import com.example.zavrsnitest.tools.Tools;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import java.sql.SQLException;
@@ -35,6 +41,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.zavrsnitest.tools.Tools.NOTIF_CHANNEL_ID;
+import static com.example.zavrsnitest.tools.Tools.KEY;
+
 
 public class MojiFilmoviActivity extends AppCompatActivity implements FilmoviAdapter.OnItemClickListener, FilmoviAdapter.OnItemLongClickListener {
 
@@ -47,6 +55,10 @@ public class MojiFilmoviActivity extends AppCompatActivity implements FilmoviAda
 
     private DatabaseHelper databaseHelper;
 
+    private FilmoviAdapter adapterLista;
+
+    private SharedPreferences prefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
@@ -55,6 +67,8 @@ public class MojiFilmoviActivity extends AppCompatActivity implements FilmoviAda
         setupToolbar();
         fillDataDrawer();
         setupDrawer();
+
+        createNotificationChannel();
     }
 
     private void refresh() {
@@ -75,6 +89,7 @@ public class MojiFilmoviActivity extends AppCompatActivity implements FilmoviAda
             recyclerView.setAdapter( adapter );
         }
     }
+
     private void fillDataDrawer() {
         drawerItems = new ArrayList<>();
         drawerItems.add( "Moji filmovi" );
@@ -203,14 +218,76 @@ public class MojiFilmoviActivity extends AppCompatActivity implements FilmoviAda
             notificationManager.createNotificationChannel( channel );
         }
     }
+
     @Override
     public void onItemClick(int position) {
 
+        Filmovi film = adapterLista.get( position );
+
+        Intent i = new Intent( this, DetaljiMojihFilmova.class );
+        i.putExtra( KEY, film.getmImdbId() );
+        i.putExtra( "id", film.getmId() );
+        startActivity( i );
     }
 
     @Override
     public void onItemLongClick(int position) {
 
+
+        Filmovi filmZaBrisanje = adapterLista.get( position );
+
+        try {
+            getDataBaseHelper().getFilmoviDao().deleteById( filmZaBrisanje.getmId() );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Toast.makeText( this, "Film je obrisan!", Toast.LENGTH_SHORT ).show();
+        refresh();
     }
+
+//        int filmZaBrisanje = getIntent().getExtras().getInt( "id", 0 );
+//        try {
+//            getDatabaseHelper().getFilmoviDao().deleteById( filmZaBrisanje );
+//            finish();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        String tekstNotifikacija = "Film je obrisan";
+//
+//        boolean toast = prefs.getBoolean( getString( R.string.toast_key ), false );
+//        boolean notif = prefs.getBoolean( getString( R.string.notif_key ), false );
+//
+//        if (toast) {
+//            Toast.makeText( MojiFilmoviActivity.this, tekstNotifikacija, Toast.LENGTH_LONG ).show();
+//        }
+//
+//        if (notif) {
+//            NotificationManager notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
+//            NotificationCompat.Builder builder = new NotificationCompat.Builder( MojiFilmoviActivity.this, NOTIF_CHANNEL_ID );
+//
+//            builder.setSmallIcon( android.R.drawable.ic_menu_delete );
+//            builder.setContentTitle( "Notifikacija" );
+//            builder.setContentText( tekstNotifikacija );
+//
+//            Bitmap bitmap = BitmapFactory.decodeResource( getResources(), R.drawable.heart );
+//
+//            builder.setLargeIcon( bitmap );
+//            notificationManager.notify( 1, builder.build() );
+//        }
+
+
+
+
+    public DatabaseHelper getDatabaseHelper() {
+        if (databaseHelper == null) {
+            databaseHelper = OpenHelperManager.getHelper( this, DatabaseHelper.class );
+        }
+        return databaseHelper;
+    }
+
+
 }
+
+
 

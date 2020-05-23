@@ -4,11 +4,19 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -22,13 +30,18 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.zavrsnitest.R;
+import com.example.zavrsnitest.adapters.FilmoviAdapter;
 import com.example.zavrsnitest.adapters.SearchAdapter;
+import com.example.zavrsnitest.db.DatabaseHelper;
+import com.example.zavrsnitest.db.model.Filmovi;
 import com.example.zavrsnitest.dialog.AboutDialog;
 import com.example.zavrsnitest.net.MyService;
 import com.example.zavrsnitest.net.model1.Search;
 import com.example.zavrsnitest.net.model1.SearchResult;
 import com.example.zavrsnitest.settings.SettingsActivity;
+import com.j256.ormlite.android.apptools.OpenHelperManager;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +52,7 @@ import retrofit2.Response;
 
 import static com.example.zavrsnitest.net.MyServiceContract.APIKEY;
 import static com.example.zavrsnitest.tools.Tools.KEY;
+import static com.example.zavrsnitest.tools.Tools.NOTIF_CHANNEL_ID;
 
 
 public class MainActivity extends AppCompatActivity implements SearchAdapter.OnItemClickListener {
@@ -56,6 +70,15 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.OnI
 
     private ImageButton btnSearch;
     private EditText movieName;
+
+    private DatabaseHelper databaseHelper;
+
+    private FilmoviAdapter adapterLista;
+
+    private SharedPreferences prefs;
+
+    private Filmovi filmovi;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,12 +153,52 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.OnI
         } );
     }
 
+    public void deleteFilmove() {
+
+
+        try {
+
+            ArrayList<Filmovi> filmoviZaBrisanje = (ArrayList<Filmovi>) getDataBaseHelper().getFilmoviDao().queryForAll();
+            getDataBaseHelper().getFilmoviDao().delete( filmoviZaBrisanje );
+
+            adapterLista.removeAll();
+            adapterLista.notifyDataSetChanged();
+
+            String tekstNotifikacije = "FilmoviAdapter - lista filmova je obrisana";
+
+            boolean toast = prefs.getBoolean( getString( R.string.toast_key ), false );
+            boolean notif = prefs.getBoolean( getString( R.string.notif_key ), false );
+
+            if (toast) {
+                Toast.makeText( MainActivity.this, tekstNotifikacije, Toast.LENGTH_LONG ).show();
+            }
+
+            if (notif) {
+                NotificationManager notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
+                NotificationCompat.Builder builder = new NotificationCompat.Builder( MainActivity.this, NOTIF_CHANNEL_ID );
+                builder.setSmallIcon( android.R.drawable.ic_menu_delete );
+                builder.setContentTitle( "Notifikacija" );
+                builder.setContentText( tekstNotifikacije );
+
+                Bitmap bitmap = BitmapFactory.decodeResource( getResources(), R.mipmap.ic_launcher_foreground );
+
+                builder.setLargeIcon( bitmap );
+                notificationManager.notify( 1, builder.build() );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        startActivity( new Intent( this, MainActivity.class ) );
+
+    }
+
     private void fillDataDrawer() {
         drawerItems = new ArrayList<>();
         drawerItems.add( "Moji filmovi" );
         drawerItems.add( "Pretraga filmova" );
-        drawerItems.add( "Settings" );
-        drawerItems.add( "Brisanje liste filmova" );
+        drawerItems.add( "Podesavanje" );
+        drawerItems.add( "Obrisi sve" );
         drawerItems.add( "O aplikaciji" );
 
 
@@ -169,7 +232,16 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.OnI
                     case 3:
                         Toast.makeText( getBaseContext(), "Obisi sve filmove", Toast.LENGTH_SHORT );
                         title = "Brisanje filmova";
-                        //TODO : brisanje cele liste filmova
+                        new AlertDialog.Builder( MainActivity.this ).setTitle( "Da li zelite da obrisete celu listu filmova?" )
+                                .setPositiveButton( "Da", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        deleteFilmove();
+
+                                    }
+                                } ).setNegativeButton( "Ne", null ).show();
+                        setTitle( "Obrisana lista  filmova" );
+
                         break;
                     case 4:
                         AboutDialog dialog = new AboutDialog( MainActivity.this );
@@ -219,6 +291,24 @@ public class MainActivity extends AppCompatActivity implements SearchAdapter.OnI
             actionBar.setHomeButtonEnabled( true );
             actionBar.show();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        super.onDestroy();
+
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
+        }
+    }
+
+    public DatabaseHelper getDataBaseHelper() {
+        if (databaseHelper == null) {
+            databaseHelper = OpenHelperManager.getHelper( this, DatabaseHelper.class );
+        }
+        return databaseHelper;
     }
 
     @Override

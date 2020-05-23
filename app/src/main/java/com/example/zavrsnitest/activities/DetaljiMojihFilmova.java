@@ -22,18 +22,13 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.example.zavrsnitest.R;
 import com.example.zavrsnitest.db.DatabaseHelper;
-import com.example.zavrsnitest.db.model.Filmovi;
 import com.example.zavrsnitest.net.MyService;
 import com.example.zavrsnitest.net.model2.Detail;
 import com.example.zavrsnitest.tools.Tools;
@@ -50,10 +45,7 @@ import retrofit2.Response;
 import static com.example.zavrsnitest.tools.Tools.NOTIF_CHANNEL_ID;
 import static com.example.zavrsnitest.net.MyServiceContract.APIKEY;
 
-
-public class DetailsActivity extends AppCompatActivity {
-
-    private Toolbar toolbar;
+public class DetaljiMojihFilmova extends AppCompatActivity {
 
     private ImageView slika;
     private TextView naslov;
@@ -69,20 +61,19 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView nagrada;
     private TextView rezija;
     private TextView budzet;
+    private Toolbar toolbar;
 
-    private TimePicker vremePicker;
-    private EditText ocena;
-
-
-    Detail detalji;
     private DatabaseHelper databaseHelper;
 
+    private Detail detalji;
+
     private SharedPreferences prefs;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
-        setContentView( R.layout.activity_details );
+        setContentView( R.layout.activity_detalji_mojih_filmova );
 
         setupToolbar();
 
@@ -90,64 +81,6 @@ public class DetailsActivity extends AppCompatActivity {
         prefs = PreferenceManager.getDefaultSharedPreferences( this );
 
     }
-
-    public void addFilm() {
-
-
-        if (ocena.getText().toString().isEmpty()) {
-            Toast.makeText( this, "Morate upisati ocenu filma", Toast.LENGTH_LONG ).show();
-
-        } else {
-            Filmovi film = new Filmovi();
-            film.setmNaziv( detalji.getTitle() );
-            film.setmGodina( detalji.getYear() );
-            film.setmImage( detalji.getPoster() );
-            film.setmImdbId( detalji.getImdbID() );
-
-            String vreme = vremePicker.getCurrentHour() + ":" + vremePicker.getCurrentMinute() + " h";
-            String ocena = this.ocena.getText().toString();
-
-            film.setmCena( ocena );
-            film.setmVreme( vreme );
-
-            try {
-
-                getDataBaseHelper().getFilmoviDao().create( film );
-
-                String tekstNotifikacije = film.getmNaziv() + " je uspesno dodat na listu mojih filmova!"
-                        + " Vreme prikazivanja " + vreme + " ocena filma je " + ocena;
-
-                boolean toast = prefs.getBoolean( getString( R.string.toast_key ), false );
-                boolean notif = prefs.getBoolean( getString( R.string.notif_key ), false );
-
-
-                if (toast) {
-                    Toast.makeText( DetailsActivity.this, tekstNotifikacije, Toast.LENGTH_LONG ).show();
-
-                }
-
-                if (notif) {
-
-                    NotificationManager notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder( DetailsActivity.this, NOTIF_CHANNEL_ID );
-                    builder.setSmallIcon( android.R.drawable.ic_menu_add );
-                    builder.setContentTitle( "Notifikacija" );
-                    builder.setContentText( tekstNotifikacije );
-
-                    Bitmap bitmap = BitmapFactory.decodeResource( getResources(), R.mipmap.ic_launcher_foreground );
-
-                    builder.setLargeIcon( bitmap );
-                    notificationManager.notify( 1, builder.build() );
-                }
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            startActivity( new Intent( this, MojiFilmoviActivity.class ) );
-        }
-
-    }
-
 
 
     private void getDetail(String imdbKey) {
@@ -166,15 +99,15 @@ public class DetailsActivity extends AppCompatActivity {
                     detalji = response.body();
                     if (detalji != null) {
                         fillData( detalji );
-                        add();
 
                     }
                 }
             }
 
+
             private void fillData(Detail detalji) {
                 slika = findViewById( R.id.detalji_slika );
-                Picasso.with( DetailsActivity.this ).load( detalji.getPoster() ).into( slika );
+                Picasso.with( DetaljiMojihFilmova.this ).load( detalji.getPoster() ).into( slika );
 
                 naslov = findViewById( R.id.detalji_naziv );
                 naslov.setText( detalji.getTitle() );
@@ -185,11 +118,11 @@ public class DetailsActivity extends AppCompatActivity {
                 glumac = findViewById( R.id.detalji_glumac );
                 glumac.setText( detalji.getActors() );
 
-//                rating_star = findViewById( R.id.detalji_ocenaZ );
-//                rating_star.setRating( Float.valueOf( detalji.getImdbRating() ) );
+                rating_star = findViewById( R.id.detalji_ocenaZ );
+                rating_star.setRating( Float.valueOf( detalji.getImdbRating() ) );
 
-                rating = findViewById( R.id.detalji_ocenaB );
-                rating.setText( detalji.getRated() );
+//                rating = findViewById(R.id.detalji_ocenaB);
+//                rating.setText( detalji.getRated() );
 
                 vreme = findViewById( R.id.detalji_vreme );
                 vreme.setText( detalji.getRuntime() );
@@ -214,32 +147,16 @@ public class DetailsActivity extends AppCompatActivity {
 
                 budzet = findViewById( R.id.detalji_budzet );
                 budzet.setText( detalji.getBoxOffice() );
-
-                vremePicker = findViewById( R.id.details_picker );
-                ocena = findViewById( R.id.details_ocena ); //TODO : PROVERITI OCENU
-
-
-            }
-
-            public void add() {
-                ImageButton add = findViewById( R.id.add );
-                add.setOnClickListener( new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        addFilm();
-
-                    }
-                } );
             }
 
             @Override
             public void onFailure(Call<Detail> call, Throwable t) {
-                Toast.makeText( DetailsActivity.this, t.getMessage(), Toast.LENGTH_SHORT ).show();
+                Toast.makeText( DetaljiMojihFilmova.this, t.getMessage(), Toast.LENGTH_SHORT ).show();
             }
         } );
     }
 
-    public void brisanjeFilm() {
+    public void pogledanFilm() {
 
         int filmZaBrisanje = getIntent().getExtras().getInt( "id", 0 );
 
@@ -248,19 +165,19 @@ public class DetailsActivity extends AppCompatActivity {
             getDataBaseHelper().getFilmoviDao().deleteById( filmZaBrisanje );
             finish();
 
-            String tekstNotifikacije = "Film je pogledan i obrisan"; // izvuci naziv
+            String tekstNotifikacije = "Film je obrisan";
 
             boolean toast = prefs.getBoolean( getString( R.string.toast_key ), false );
             boolean notif = prefs.getBoolean( getString( R.string.notif_key ), false );
 
             if (toast) {
-                Toast.makeText( DetailsActivity.this, tekstNotifikacije, Toast.LENGTH_LONG ).show();
+                Toast.makeText( DetaljiMojihFilmova.this, tekstNotifikacije, Toast.LENGTH_LONG ).show();
 
             }
 
             if (notif) {
                 NotificationManager notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
-                NotificationCompat.Builder builder = new NotificationCompat.Builder( DetailsActivity.this, NOTIF_CHANNEL_ID );
+                NotificationCompat.Builder builder = new NotificationCompat.Builder( DetaljiMojihFilmova.this, NOTIF_CHANNEL_ID );
                 builder.setSmallIcon( android.R.drawable.ic_menu_delete );
                 builder.setContentTitle( "Notifikacija" );
                 builder.setContentText( tekstNotifikacije );
@@ -279,36 +196,36 @@ public class DetailsActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate( R.menu.menu_detalji, menu );
+        getMenuInflater().inflate( R.menu.menu_moji_filmovi, menu );
         return super.onCreateOptionsMenu( menu );
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.brisanje_film:
-                new AlertDialog.Builder( DetailsActivity.this ).setTitle( "Da li zelite da obrisete film?" )
+            case R.id.pogledan_film:
+                new AlertDialog.Builder( DetaljiMojihFilmova.this ).setTitle( "Da li zelite da obrisete pogledan film?" )
                         .setPositiveButton( "Da", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                brisanjeFilm();
+                                pogledanFilm();
 
                             }
                         } ).setNegativeButton( "Ne", null ).show();
                 setTitle( "Pogledan i obrisan film" );
-                setTitle( "Brisanje filma" );
                 break;
             case android.R.id.home:
-                startActivity( new Intent( this, MainActivity.class ) );
+                startActivity( new Intent( this, MojiFilmoviActivity.class ) );
                 break;
         }
         return super.onOptionsItemSelected( item );
     }
+
     public void setupToolbar() {
         toolbar = findViewById( R.id.toolbar );
         setSupportActionBar( toolbar );
         toolbar.setTitleTextColor( Color.WHITE );
-        toolbar.setSubtitle( "Detalji filma" );
+        toolbar.setSubtitle( "Detail omiljenog filma" );
 
         final ActionBar actionBar = getSupportActionBar();
 
@@ -346,7 +263,6 @@ public class DetailsActivity extends AppCompatActivity {
         return databaseHelper;
     }
 
-
     private void createNotificationChannel() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -361,3 +277,4 @@ public class DetailsActivity extends AppCompatActivity {
         }
     }
 }
+

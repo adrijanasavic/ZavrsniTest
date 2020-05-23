@@ -46,7 +46,7 @@ public class SplashScreen extends Activity {
 
         splashTime = prefs.getString( getString( R.string.splashtime_key ), "3000" );
 
-        splash = prefs.getBoolean( getString( R.string.splash_key ), true );
+        splash = prefs.getBoolean( getString( R.string.splash_key ), false );
 
         if (splash) {
             setContentView( R.layout.splash_screen );
