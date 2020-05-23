@@ -13,6 +13,29 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/ime_filma"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="10dp"
+                android:fontFamily="@font/butterfly_kids"
+                android:hint="Unesite naziv filma"
+                android:textSize="40dp" />
+
+        <ImageButton
+            android:id="@+id/btn_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@android:drawable/ic_menu_search" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvList"
             android:layout_width="match_parent"
@@ -20,7 +43,7 @@
             android:divider="#b5b5b5"
 
             android:background="@drawable/backgraund_pink"/>
-
+        </LinearLayout>
         <RelativeLayout
             android:id="@+id/drawerPane"
             android:layout_width="280dp"
