@@ -6,9 +6,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -237,6 +239,43 @@ public class DetailsActivity extends AppCompatActivity {
         } );
     }
 
+    public void brisanjeFilm() {
+
+        int filmZaBrisanje = getIntent().getExtras().getInt( "id", 0 );
+
+        try {
+
+            getDataBaseHelper().getFilmoviDao().deleteById( filmZaBrisanje );
+            finish();
+
+            String tekstNotifikacije = "Film je pogledan i obrisan"; // izvuci naziv
+
+            boolean toast = prefs.getBoolean( getString( R.string.toast_key ), false );
+            boolean notif = prefs.getBoolean( getString( R.string.notif_key ), false );
+
+            if (toast) {
+                Toast.makeText( DetailsActivity.this, tekstNotifikacije, Toast.LENGTH_LONG ).show();
+
+            }
+
+            if (notif) {
+                NotificationManager notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
+                NotificationCompat.Builder builder = new NotificationCompat.Builder( DetailsActivity.this, NOTIF_CHANNEL_ID );
+                builder.setSmallIcon( android.R.drawable.ic_menu_delete );
+                builder.setContentTitle( "Notifikacija" );
+                builder.setContentText( tekstNotifikacije );
+
+                Bitmap bitmap = BitmapFactory.decodeResource( getResources(), R.mipmap.ic_launcher_foreground );
+
+                builder.setLargeIcon( bitmap );
+                notificationManager.notify( 1, builder.build() );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -249,6 +288,15 @@ public class DetailsActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.brisanje_film:
                 //TODO :brisanje filma
+                new AlertDialog.Builder( DetailsActivity.this ).setTitle( "Da li zelite da obrisete film?" )
+                        .setPositiveButton( "Da", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                brisanjeFilm();
+
+                            }
+                        } ).setNegativeButton( "Ne", null ).show();
+                setTitle( "Pogledan i obrisan film" );
                 setTitle( "Brisanje filma" );
                 break;
             case android.R.id.home:
